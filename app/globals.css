@@ -314,6 +314,20 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
+}
+
+.navbar-center-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--theme-text-primary);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .mei-brand-link {
@@ -342,22 +356,21 @@ h1 {
 
 .theme-toggle-btn {
   background: transparent;
-  border: 1px solid var(--theme-border-default);
-  border-radius: var(--border-radius-scale-full);
-  width: 40px;
-  height: 40px;
+  border: none;
+  border-radius: var(--border-radius-scale-md);
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--theme-text-secondary);
-  transition: background-color var(--motion-duration-fast), border-color var(--motion-duration-fast), color var(--motion-duration-fast);
+  transition: all var(--motion-duration-fast) var(--motion-easing-easeInOut);
 }
 
 .theme-toggle-btn:hover {
   background-color: var(--theme-bg-surface);
   color: var(--theme-text-primary);
-  border-color: var(--theme-border-strong);
 }
 
 /* 2. Card */
@@ -1409,22 +1422,23 @@ html.dark .settings-tab-btn.active {
    ========================================== */
 .mei-tab-switcher {
   display: flex;
-  background-color: var(--theme-bg-surface);
-  border-radius: var(--border-radius-scale-full);
-  padding: var(--spacing-scale-1);
-  gap: var(--spacing-scale-1);
-  border: 1px solid var(--theme-border-default);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  gap: 32px;
+  width: fit-content;
 }
 
 .mei-tab-switch-btn {
   background: transparent;
   border: none;
-  border-radius: var(--border-radius-scale-full);
-  padding: var(--spacing-scale-1-5) var(--spacing-scale-4);
-  font-size: var(--typography-size-sm);
-  font-weight: var(--typography-fontWeight-semibold);
+  padding: 8px 0;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--theme-text-secondary);
   cursor: pointer;
+  position: relative;
   transition: all var(--motion-duration-fast) var(--motion-easing-easeInOut);
 }
 
@@ -1433,14 +1447,38 @@ html.dark .settings-tab-btn.active {
 }
 
 .mei-tab-switch-btn.active {
-  color: var(--color-primary-scale-600);
-  background-color: var(--theme-bg-elevated);
-  box-shadow: var(--theme-shadow-sm);
+  color: var(--color-primary-scale-500);
+  font-weight: 600;
+  background-color: transparent;
+  box-shadow: none;
+  transform: none;
 }
 
 html.dark .mei-tab-switch-btn.active {
-  color: var(--color-primary-scale-300);
-  background-color: var(--theme-bg-surface);
+  color: var(--color-primary-scale-400);
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.mei-tab-switch-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary-scale-500);
+  border-radius: var(--border-radius-scale-full);
+  transform: scaleX(0);
+  transition: transform var(--motion-duration-fast) var(--motion-easing-easeInOut);
+}
+
+html.dark .mei-tab-switch-btn::after {
+  background: var(--color-primary-scale-400);
+}
+
+.mei-tab-switch-btn.active::after {
+  transform: scaleX(1);
 }
 
 /* Workspace Layout Grid */
@@ -1656,6 +1694,25 @@ html.dark .player-btn:hover {
   border-radius: var(--border-radius-scale-sm);
   background: rgba(16, 185, 129, 0.1);
   transition: opacity 0.5s ease;
+}
+
+/* 自定义播放器禁用状态 */
+.mei-custom-player.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 

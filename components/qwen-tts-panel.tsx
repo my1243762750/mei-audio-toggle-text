@@ -25,7 +25,7 @@ export function QwenTtsPanel({
   const [message, setMessage] = useState("");
   const [speaker, setSpeaker] = useState("Serena");
   const [language, setLanguage] = useState("Chinese");
-  const [instruct, setInstruct] = useState("撒娇语气");
+  const [instruct, setInstruct] = useState("音调低沉");
   const [refText, setRefText] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -259,102 +259,141 @@ export function QwenTtsPanel({
         </div>
 
         {/* 底部生成与播放 */}
-        <div className="mei-panel-footer" style={{ borderTop: "1px solid var(--theme-border-default)", paddingTop: "16px", marginTop: "auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
+        <div className="mei-panel-footer" style={{ borderTop: "1px solid var(--theme-border-default)", paddingTop: "16px", marginTop: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
+          {/* 第一行：生成控制和状态提示 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", minHeight: "38px" }}>
             <button
               className="mei-btn-primary"
               disabled={isGenerating}
               onClick={generateSpeech}
               style={{ flexShrink: 0 }}
             >
-              {isGenerating ? "生成中..." : "生成语音"}
+              {isGenerating ? (
+                <>
+                  <span className="spinner" style={{ width: "12px", height: "12px", borderWidth: "1.5px", marginRight: "6px" }}></span>
+                  生成中...
+                </>
+              ) : "生成语音"}
             </button>
-            {message && (
-              <div
-                className={`mei-status-msg ${message.includes("失败") || message.includes("请先") ? "error" : "info"}`}
-                style={{ margin: 0, flex: 1, padding: "6px 12px", fontSize: "13px" }}
-              >
-                {message}
-              </div>
-            )}
-          </div>
-          {audioUrl && (
-            <div className="field-stack" style={{ gap: "6px", marginTop: "12px", width: "100%" }}>
-              {showReady && (
-                <div className="mei-ready-badge" style={{ alignSelf: "flex-start", marginBottom: "4px" }}>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: "inline-block" }}>
-                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            
+            {/* 状态与就绪微提示 (完全不换行，保持在第一行，保证高度不变) */}
+            <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+              {isGenerating && (
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--theme-text-secondary)", fontSize: "13px" }}>
+                  <span>正在合成音频，请稍候...</span>
+                </div>
+              )}
+              {!isGenerating && message && (
+                <div 
+                  style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "6px", 
+                    color: message.includes("失败") || message.includes("请先") ? "var(--color-semantic-error-base)" : "var(--theme-text-secondary)", 
+                    fontSize: "13px",
+                    fontWeight: 500
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{message}</span>
+                </div>
+              )}
+              {!isGenerating && !message && showReady && (
+                <div className="mei-ready-badge" style={{ animation: "fadeIn 0.3s ease" }}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   <span>音频已就绪</span>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* 第二行：自定义音频播放器 (固定渲染，消除高度抖动) */}
+          <div className="field-stack" style={{ gap: "6px", width: "100%" }}>
+            <div className={`mei-custom-player ${!audioUrl ? "disabled" : ""}`}>
+              <button 
+                className="player-btn" 
+                onClick={togglePlay} 
+                type="button" 
+                title={isPlaying ? "暂停" : "播放"}
+                disabled={!audioUrl}
+              >
+                {isPlaying ? (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                    <rect x="2" y="1" width="3" height="12" rx="1" />
+                    <rect x="9" y="1" width="3" height="12" rx="1" />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" style={{ marginLeft: "2px" }}>
+                    <path d="M3 1.5L12 7L3 12.5V1.5Z" />
+                  </svg>
+                )}
+              </button>
               
-              <div className="mei-custom-player">
-                <button className="player-btn" onClick={togglePlay} type="button" title={isPlaying ? "暂停" : "播放"}>
-                  {isPlaying ? (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
-                      <rect x="2" y="1" width="3" height="12" rx="1" />
-                      <rect x="9" y="1" width="3" height="12" rx="1" />
-                    </svg>
-                  ) : (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" style={{ marginLeft: "2px" }}>
-                      <path d="M3 1.5L12 7L3 12.5V1.5Z" />
-                    </svg>
-                  )}
-                </button>
-                
-                <div className="player-time-display">
-                  {formatTime(currentTime)} / {formatTime(duration)}
-                </div>
-                
-                <div className="player-progress-container">
-                  <input
-                    className="player-progress-bar"
-                    type="range"
-                    min={0}
-                    max={duration || 1}
-                    step={0.1}
-                    value={currentTime}
-                    onChange={handleProgressChange}
-                  />
-                </div>
-                
-                <button className="player-btn" onClick={toggleMute} type="button" title={isMuted ? "取消静音" : "静音"}>
-                  {isMuted || volume === 0 ? (
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M1.5 5h3l3.5-3v12l-3.5-3h-3v-6zm12.854-1.646l1.414 1.414L11.414 9l4.354 4.354-1.414 1.414L10 10.414l-4.354 4.354-1.414-1.414L8.586 9 4.232 4.646l1.414-1.414L10 7.586l4.354-4.232z" />
-                    </svg>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M11.5 8c0-1.48-.85-2.73-2-3.3V4.7c1.65.65 2.8 2.27 2.8 4.15s-1.15 3.5-2.8 4.15v-1.15c1.15-.57 2-1.82 2-3.3zM2 5v6h3.5L9 14.5v-13L5.5 5H2zm9.5 3c0-2.48-1.72-4.57-4-5.15v1.05c1.72.53 3 2.1 3 4.1s-1.28 3.57-3 4.1v1.05c2.28-.58 4-2.67 4-5.15z" />
-                    </svg>
-                  )}
-                </button>
-                
-                <div className="player-volume-slider-container">
-                  <input
-                    className="player-volume-slider"
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={isMuted ? 0 : volume}
-                    onChange={handleVolumeChange}
-                  />
-                </div>
-                
-                <audio
-                  ref={audioRef}
-                  src={audioUrl}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  onTimeUpdate={handleTimeUpdate}
-                  onLoadedMetadata={handleLoadedMetadata}
-                  onEnded={() => setIsPlaying(false)}
+              <div className="player-time-display">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </div>
+              
+              <div className="player-progress-container">
+                <input
+                  className="player-progress-bar"
+                  type="range"
+                  min={0}
+                  max={duration || 1}
+                  step={0.1}
+                  value={currentTime}
+                  onChange={handleProgressChange}
+                  disabled={!audioUrl}
                 />
               </div>
+              
+              <button 
+                className="player-btn" 
+                onClick={toggleMute} 
+                type="button" 
+                title={isMuted ? "取消静音" : "静音"}
+                disabled={!audioUrl}
+              >
+                {isMuted || volume === 0 ? (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M1.5 5h3l3.5-3v12l-3.5-3h-3v-6zm12.854-1.646l1.414 1.414L11.414 9l4.354 4.354-1.414 1.414L10 10.414l-4.354 4.354-1.414-1.414L8.586 9 4.232 4.646l1.414-1.414L10 7.586l4.354-4.232z" />
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M11.5 8c0-1.48-.85-2.73-2-3.3V4.7c1.65.65 2.8 2.27 2.8 4.15s-1.15 3.5-2.8 4.15v-1.15c1.15-.57 2-1.82 2-3.3zM2 5v6h3.5L9 14.5v-13L5.5 5H2zm9.5 3c0-2.48-1.72-4.57-4-5.15v1.05c1.72.53 3 2.1 3 4.1s-1.28 3.57-3 4.1v1.05c2.28-.58 4-2.67 4-5.15z" />
+                  </svg>
+                )}
+              </button>
+              
+              <div className="player-volume-slider-container">
+                <input
+                  className="player-volume-slider"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  disabled={!audioUrl}
+                />
+              </div>
+              
+              <audio
+                ref={audioRef}
+                src={audioUrl || undefined}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
+                onEnded={() => setIsPlaying(false)}
+              />
             </div>
-          )}
+          </div>
         </div>
       </div>
 
