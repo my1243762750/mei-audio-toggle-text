@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+output/
+
+.env
+.env*.local
+
+.DS_Store
+__pycache__/
+*.pyc
+npm-debug.log*
+
+services/qwen-tts/venv/
+services/qwen-asr/venv/
