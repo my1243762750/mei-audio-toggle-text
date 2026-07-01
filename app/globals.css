@@ -1525,4 +1525,138 @@ html.dark .mei-tab-switch-btn.active {
   }
 }
 
+/* ==========================================
+   Mei UI Custom Audio Player Styling
+   ========================================== */
+.mei-custom-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--theme-bg-surface);
+  border: 1px solid var(--theme-border-default);
+  border-radius: var(--border-radius-scale-lg);
+  padding: 8px 16px;
+  width: 100%;
+  box-shadow: var(--theme-shadow-sm);
+  transition: all var(--motion-duration-fast) var(--motion-easing-easeInOut);
+}
+
+.mei-custom-player:hover {
+  border-color: var(--color-primary-scale-300);
+  box-shadow: var(--theme-shadow-md);
+}
+
+html.dark .mei-custom-player:hover {
+  border-color: var(--color-primary-scale-700);
+}
+
+.player-btn {
+  background: transparent;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-scale-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-primary-scale-500);
+  transition: all var(--motion-duration-fast);
+}
+
+.player-btn:hover {
+  background-color: var(--color-primary-scale-50);
+  color: var(--color-primary-scale-600);
+  transform: scale(1.05);
+}
+
+html.dark .player-btn:hover {
+  background-color: rgba(108, 92, 231, 0.15);
+  color: var(--color-primary-scale-300);
+}
+
+.player-time-display {
+  font-family: var(--typography-fontFamily-mono);
+  font-size: var(--typography-size-xs);
+  color: var(--theme-text-secondary);
+  white-space: nowrap;
+}
+
+.player-progress-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* 进度滑块定制 */
+.player-progress-bar {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: var(--border-radius-scale-full);
+  background: var(--theme-border-default);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.player-progress-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary-scale-500);
+  cursor: pointer;
+  border: 2px solid var(--theme-bg-elevated);
+  box-shadow: var(--theme-shadow-sm);
+  transition: transform var(--motion-duration-fast), background var(--motion-duration-fast);
+}
+
+.player-progress-bar::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: var(--color-primary-scale-600);
+}
+
+.player-volume-slider-container {
+  width: 70px;
+  display: flex;
+  align-items: center;
+}
+
+.player-volume-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: var(--border-radius-scale-full);
+  background: var(--theme-border-default);
+  outline: none;
+  cursor: pointer;
+}
+
+.player-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary-scale-400);
+  cursor: pointer;
+}
+
+/* 极简精致的已就绪标志 */
+.mei-ready-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-semantic-success-base);
+  padding: 2px 8px;
+  border-radius: var(--border-radius-scale-sm);
+  background: rgba(16, 185, 129, 0.1);
+  transition: opacity 0.5s ease;
+}
+
+
 

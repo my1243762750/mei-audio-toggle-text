@@ -33,6 +33,15 @@ export function QwenTtsPanel({
   const refAudioInputRef = useRef<HTMLInputElement | null>(null);
   const recorder = useAudioRecorder({ filePrefix: "base-recording" });
 
+  // 自定义播放器状态
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [showReady, setShowReady] = useState(false);
+
   useEffect(() => {
     return () => {
       if (audioUrlRef.current) {
@@ -40,6 +49,80 @@ export function QwenTtsPanel({
       }
     };
   }, []);
+
+  // 已就绪提示淡出
+  useEffect(() => {
+    if (showReady) {
+      const timer = setTimeout(() => {
+        setShowReady(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showReady]);
+
+  // 当音频 URL 改变时重置播放器状态
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.load();
+      setIsPlaying(false);
+      setCurrentTime(0);
+    }
+  }, [audioUrl]);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch((err) => console.error(err));
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleProgressChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextTime = parseFloat(event.target.value);
+    setCurrentTime(nextTime);
+    if (audioRef.current) {
+      audioRef.current.currentTime = nextTime;
+    }
+  };
+
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    const nextMute = !isMuted;
+    setIsMuted(nextMute);
+    audioRef.current.muted = nextMute;
+  };
+
+  const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextVal = parseFloat(event.target.value);
+    setVolume(nextVal);
+    if (audioRef.current) {
+      audioRef.current.volume = nextVal;
+      if (nextVal > 0 && isMuted) {
+        setIsMuted(false);
+        audioRef.current.muted = false;
+      }
+    }
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "00:00";
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
 
   function changeLanguage(value: string) {
     setLanguage(value);
@@ -127,7 +210,8 @@ export function QwenTtsPanel({
       const nextAudioUrl = URL.createObjectURL(blob);
       audioUrlRef.current = nextAudioUrl;
       setAudioUrl(nextAudioUrl);
-      setMessage("生成完成");
+      setMessage("");
+      setShowReady(true);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "生成失败");
     } finally {
@@ -187,7 +271,7 @@ export function QwenTtsPanel({
             </button>
             {message && (
               <div
-                className={`mei-status-msg ${message.includes("失败") || message.includes("请先") ? "error" : message.includes("完成") ? "success" : "info"}`}
+                className={`mei-status-msg ${message.includes("失败") || message.includes("请先") ? "error" : "info"}`}
                 style={{ margin: 0, flex: 1, padding: "6px 12px", fontSize: "13px" }}
               >
                 {message}
@@ -195,8 +279,80 @@ export function QwenTtsPanel({
             )}
           </div>
           {audioUrl && (
-            <div className="field-stack" style={{ gap: "6px", marginTop: "8px" }}>
-              <audio controls src={audioUrl} style={{ width: "100%", height: "38px" }} />
+            <div className="field-stack" style={{ gap: "6px", marginTop: "12px", width: "100%" }}>
+              {showReady && (
+                <div className="mei-ready-badge" style={{ alignSelf: "flex-start", marginBottom: "4px" }}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ display: "inline-block" }}>
+                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span>音频已就绪</span>
+                </div>
+              )}
+              
+              <div className="mei-custom-player">
+                <button className="player-btn" onClick={togglePlay} type="button" title={isPlaying ? "暂停" : "播放"}>
+                  {isPlaying ? (
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <rect x="2" y="1" width="3" height="12" rx="1" />
+                      <rect x="9" y="1" width="3" height="12" rx="1" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" style={{ marginLeft: "2px" }}>
+                      <path d="M3 1.5L12 7L3 12.5V1.5Z" />
+                    </svg>
+                  )}
+                </button>
+                
+                <div className="player-time-display">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </div>
+                
+                <div className="player-progress-container">
+                  <input
+                    className="player-progress-bar"
+                    type="range"
+                    min={0}
+                    max={duration || 1}
+                    step={0.1}
+                    value={currentTime}
+                    onChange={handleProgressChange}
+                  />
+                </div>
+                
+                <button className="player-btn" onClick={toggleMute} type="button" title={isMuted ? "取消静音" : "静音"}>
+                  {isMuted || volume === 0 ? (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M1.5 5h3l3.5-3v12l-3.5-3h-3v-6zm12.854-1.646l1.414 1.414L11.414 9l4.354 4.354-1.414 1.414L10 10.414l-4.354 4.354-1.414-1.414L8.586 9 4.232 4.646l1.414-1.414L10 7.586l4.354-4.232z" />
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M11.5 8c0-1.48-.85-2.73-2-3.3V4.7c1.65.65 2.8 2.27 2.8 4.15s-1.15 3.5-2.8 4.15v-1.15c1.15-.57 2-1.82 2-3.3zM2 5v6h3.5L9 14.5v-13L5.5 5H2zm9.5 3c0-2.48-1.72-4.57-4-5.15v1.05c1.72.53 3 2.1 3 4.1s-1.28 3.57-3 4.1v1.05c2.28-.58 4-2.67 4-5.15z" />
+                    </svg>
+                  )}
+                </button>
+                
+                <div className="player-volume-slider-container">
+                  <input
+                    className="player-volume-slider"
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={isMuted ? 0 : volume}
+                    onChange={handleVolumeChange}
+                  />
+                </div>
+                
+                <audio
+                  ref={audioRef}
+                  src={audioUrl}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onEnded={() => setIsPlaying(false)}
+                />
+              </div>
             </div>
           )}
         </div>
