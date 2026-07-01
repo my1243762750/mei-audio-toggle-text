@@ -1,4 +1,8 @@
-# ![logo](public/logo.svg) Mei Audio
+<p align="center">
+  <img src="public/logo.svg" alt="Mei Audio Logo" width="128" height="128">
+</p>
+
+# Mei Audio
 
 极简、清爽的智能语音工作台，支持 **文字转语音 (TTS)** 与 **语音转文字 (ASR)** 极速合成与转写。
 
